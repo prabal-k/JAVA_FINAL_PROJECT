@@ -19,15 +19,13 @@ public class Car_shape extends JPanel implements KeyListener, ActionListener,Run
     private BufferedImage offscreenImage;
     private int imageX = 0;
     ImageIcon carimage = new ImageIcon("src\\car.png");
-    ImageIcon backcarimage = new ImageIcon("src\\rcar.png");
+    ImageIcon bulletimage = new ImageIcon("src\\bullet.gif");
 
     ImageIcon forwardimage = new ImageIcon("src\\still.gif");
     ImageIcon backwardimage = new ImageIcon("src\\rstill.gif");
     ImageIcon fly = new ImageIcon("src\\fly.gif");
-    int carSpeed = 0;
-    int xpos = 400, ypos = 590;
+    int xpos = 300, ypos = 590;
     Music obj = new Music();
-    int surfacespeed = 0,surfacespeed2=0;
     private Timer timer;
     private int carSpeedY = 0;
     private int gravity = 1;
@@ -38,6 +36,10 @@ public class Car_shape extends JPanel implements KeyListener, ActionListener,Run
     private boolean gameOver = false;
     boolean gamerun=true;
     String formattedTime;
+    int spacexpos=0;
+    private int bulletX = xpos + 93;
+    private int bulletY = ypos + 20;
+    private int bulletSpeed = 10;
     public Car_shape() throws LineUnavailableException, UnsupportedAudioFileException, IOException {
 
         Timer htimer = new Timer(1000, new ActionListener() { // Timer fires every 1000 milliseconds (1 second)
@@ -68,14 +70,15 @@ public class Car_shape extends JPanel implements KeyListener, ActionListener,Run
 
     }
     @Override
-    public void paint(Graphics g) {
-        super.paint(g);
+    public void paintComponent(Graphics g) {
+        super.paintComponent(g);
 
         if (offscreenImage == null) {
             offscreenImage = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
         }
         
-        Graphics2D g2d = (Graphics2D) g;
+        //Graphics2D g2d = (Graphics2D) g;
+        Graphics2D g2d = offscreenImage.createGraphics();
         int imageWidth = backgroundimg.getIconWidth();
 
         // Clear the offscreen buffer
@@ -88,10 +91,10 @@ public class Car_shape extends JPanel implements KeyListener, ActionListener,Run
 
 
         // Draw score in mm:ss format
-        g.setColor(Color.BLACK);
-        g.setFont(new Font("Arial", Font.CENTER_BASELINE, 20));
+        g2d.setColor(Color.BLACK);
+        g2d.setFont(new Font("Arial", Font.CENTER_BASELINE, 20));
         formattedTime = String.format("%02d:%02d", elapsedTime / 60, elapsedTime % 60);
-        g.drawString("Score: " + formattedTime, 10, 30);
+        g2d.drawString("Score: " + formattedTime, 10, 30);
 
         if (carf)
         {
@@ -103,22 +106,21 @@ public class Car_shape extends JPanel implements KeyListener, ActionListener,Run
             g2d.drawImage(backwardimage.getImage(),  xpos, ypos , null);
 
         }
+        else if (carup) {
+            g2d.drawImage(forwardimage.getImage(),  xpos, ypos , null);
+            g2d.drawImage(fly.getImage(),xpos+35,ypos+30,null);
 
-        else if (carup)
-         {
+        }
 
-         }
-         else
+        else
          {
              g2d.drawImage(carimage.getImage(),  xpos, ypos , null);
          }
+        if (space)
+        {
+            g2d.drawImage(bulletimage.getImage(),  bulletX, bulletY , null);
 
-
-         if(space)
-         {
-                g2d.drawImage(fly.getImage(),xpos+370,ypos+275,null);
-         }
-
+        }
 
 
         g2d.dispose(); // Release resources
@@ -154,7 +156,12 @@ public class Car_shape extends JPanel implements KeyListener, ActionListener,Run
         }
     }
     void update() throws UnsupportedAudioFileException, LineUnavailableException, IOException {
-
+        if (space) {
+            bulletX += bulletSpeed;
+            if (bulletX > framewidth) {
+              space = false; // Reset when bullet reaches the right end
+            }
+        }
     }
     @Override
     public void keyTyped(KeyEvent e) {
@@ -164,8 +171,10 @@ public class Car_shape extends JPanel implements KeyListener, ActionListener,Run
 
         if (e.getKeyCode() == KeyEvent.VK_W ) {
             carf = true;
-            imageX += 10;
+            imageX += 11;
             imageX %= backgroundimg.getIconWidth();
+            
+
 
             try {
                 obj.sound(carf);
@@ -179,7 +188,7 @@ public class Car_shape extends JPanel implements KeyListener, ActionListener,Run
         }
         if (e.getKeyCode() == KeyEvent.VK_S) {
             carb = true;
-            imageX -= 10;
+            imageX -= 15;
             imageX %= backgroundimg.getIconWidth();
             try {
                 obj.sound(carb);
@@ -192,19 +201,19 @@ public class Car_shape extends JPanel implements KeyListener, ActionListener,Run
             }
         }
         if (e.getKeyCode() == KeyEvent.VK_A) {
-            carup = true;
+
         }
         if (e.getKeyCode() == KeyEvent.VK_D) {
             isJumping = true;
+            carup = true;
+            carSpeedY = 10;
+
+        }
+        if (e.getKeyCode() == KeyEvent.VK_SPACE)
+        {
             space=true;
-            carSpeedY = 15;
-        }
-        if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-            esc = true;
-
-        }
-        if (e.getKeyCode() == KeyEvent.VK_SPACE && !isJumping) {
-
+            bulletX = xpos + 93; // Reset the bullet's starting position
+            bulletY = ypos + 20;
         }
 
     }
@@ -236,12 +245,14 @@ public class Car_shape extends JPanel implements KeyListener, ActionListener,Run
                 throw new RuntimeException(ex);
             }
         }
-        if (e.getKeyCode() == KeyEvent.VK_A) {
-            carup = false;
-
-        }
         if (e.getKeyCode() == KeyEvent.VK_D) {
             space = false;
+            carup = false;
+            carSpeedY = 5;
+        }
+        if (e.getKeyCode() == KeyEvent.VK_SPACE)
+        {
+            space=false;
         }
 
     }
