@@ -219,14 +219,16 @@ public class Car_shape extends JPanel implements KeyListener, ActionListener,Run
             imageX += 4;
             imageX %= backgroundimg.getIconWidth();
             sound(carf);
-            flyingenemyx=flyingenemyx-3;
-             groundenemyx=groundenemyx-3;
+            flyingenemyx=flyingenemyx-5;
+            groundenemyx=groundenemyx-3;
         }
         if(carb)
         {
             imageX -= 4;
             imageX %= backgroundimg.getIconWidth();
             sound(carb);
+            flyingenemyx=flyingenemyx+3;
+            groundenemyx=groundenemyx+3;
         }
         if(carup)
         {
