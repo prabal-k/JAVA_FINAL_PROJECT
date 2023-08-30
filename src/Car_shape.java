@@ -12,13 +12,15 @@ public class Car_shape extends JPanel implements KeyListener, ActionListener,Run
     JFrame frame = new JFrame();
     int fps = 60;
     Thread gameThread;
-    boolean carf = false, carb = false, carup = false, cardown = false, esc = false,space=false;
+    boolean carf = false, carb = false, carup = false,space=false;
     int framewidth = 1200, frameheight = 700;
     //for background image
     ImageIcon backgroundimg = new ImageIcon("src\\background.png");
     private BufferedImage offscreenImage;
     private int imageX = 0;
     ImageIcon carimage = new ImageIcon("src\\car.png");
+    ImageIcon flyingenemyimage = new ImageIcon("src\\enemy.gif");
+    ImageIcon groundenemyimage = new ImageIcon("src\\groundenemy.gif");
     ImageIcon bulletimage = new ImageIcon("src\\bullet.gif");
 
     ImageIcon forwardimage = new ImageIcon("src\\still.gif");
@@ -29,17 +31,17 @@ public class Car_shape extends JPanel implements KeyListener, ActionListener,Run
     private Timer timer;
     private int carSpeedY = 0;
     private int gravity = 1;
-    private boolean isJumping = false;
+    private boolean isJumping = false,gamerunning=true;
 
     //for score
     private int elapsedTime = 0;
-    private boolean gameOver = false;
-    boolean gamerun=true;
     String formattedTime;
-    int spacexpos=0;
     private int bulletX = xpos + 93;
     private int bulletY = ypos + 20;
-    private int bulletSpeed = 10;
+    private int bulletSpeed =10;
+    int flyingenemyx=2000,flyingenemyy=200,groundenemyx=1000,groundenemyy=550;
+    private boolean gameRunning = true;
+    private boolean enterPressed = false;
     public Car_shape() throws LineUnavailableException, UnsupportedAudioFileException, IOException {
 
         Timer htimer = new Timer(1000, new ActionListener() { // Timer fires every 1000 milliseconds (1 second)
@@ -123,10 +125,50 @@ public class Car_shape extends JPanel implements KeyListener, ActionListener,Run
         }
 
 
-        g2d.dispose(); // Release resources
 
+        //for flyingEnemy CHaracter
+        g2d.drawImage(flyingenemyimage.getImage(),flyingenemyx,flyingenemyy,null);
+
+        //for groundEnemy CHaracter
+        g2d.drawImage(groundenemyimage.getImage(),groundenemyx,groundenemyy,null);
+
+        //check collision between car and flyingenemy
+        Rectangle carrect =new Rectangle(xpos,ypos,carimage.getIconWidth(),carimage.getIconHeight());
+        Rectangle enemyRect =new Rectangle(flyingenemyx,flyingenemyy,flyingenemyimage.getIconWidth(),flyingenemyimage.getIconHeight());
+        if(carrect.intersects(enemyRect))
+            {
+                gamerunning=false;
+            }
+
+        //check collision between car and ground enemy
+        Rectangle groundenemyrect =new Rectangle(groundenemyx,groundenemyy,groundenemyimage.getIconWidth(),groundenemyimage.getIconHeight());
+        if(carrect.intersects(groundenemyrect))
+        {
+            gamerunning=false;
+            
+        }
+        if (!gamerunning) {
+            gameover(g);
+            return;
+        }
+
+        g2d.dispose(); // Release resources
         g.drawImage(offscreenImage, 0, 0, this);
     }
+
+    private void gameover(Graphics g) {
+        carf = false;
+        carb = false;
+        carup = false;
+        space = false;
+        sound(false);
+        g.setColor(Color.RED);
+        g.setFont(new Font("Arial", Font.BOLD, 40));
+        g.drawString("Game Over", framewidth / 2 - 100, frameheight / 2);
+        g.setFont(new Font("Arial", Font.PLAIN, 20));
+        g.drawString("Press Enter to Restart", framewidth / 2 - 120, frameheight / 2 + 40);
+    }
+
     //for game control loop (fps)
     @Override
     public void run() {
@@ -156,12 +198,44 @@ public class Car_shape extends JPanel implements KeyListener, ActionListener,Run
         }
     }
     void update() throws UnsupportedAudioFileException, LineUnavailableException, IOException {
-        if (space) {
+        flyingenemyx--;
+        groundenemyx--;
+        if (!gameRunning) {
+            return; // Skip updating if the game is over
+        }
+
+        // Existing update logic
+
+
+        if (space)
+        {
             bulletX += bulletSpeed;
             if (bulletX > framewidth) {
               space = false; // Reset when bullet reaches the right end
             }
         }
+        if (carf)
+        {
+            imageX += 4;
+            imageX %= backgroundimg.getIconWidth();
+            sound(carf);
+            flyingenemyx=flyingenemyx-2;
+            groundenemyx=groundenemyx-2;
+        }
+        if(carb)
+        {
+            imageX -= 4;
+            imageX %= backgroundimg.getIconWidth();
+            sound(carb);
+        }
+        if(carup)
+        {
+            isJumping = true;
+            carSpeedY = 6;
+            flyingenemyy++;
+        }
+//
+
     }
     @Override
     public void keyTyped(KeyEvent e) {
@@ -171,42 +245,18 @@ public class Car_shape extends JPanel implements KeyListener, ActionListener,Run
 
         if (e.getKeyCode() == KeyEvent.VK_W ) {
             carf = true;
-            imageX += 11;
-            imageX %= backgroundimg.getIconWidth();
-            
-
-
-            try {
-                obj.sound(carf);
-            } catch (UnsupportedAudioFileException ex) {
-                throw new RuntimeException(ex);
-            } catch (IOException ex) {
-                throw new RuntimeException(ex);
-            } catch (LineUnavailableException ex) {
-                throw new RuntimeException(ex);
-            }
         }
         if (e.getKeyCode() == KeyEvent.VK_S) {
             carb = true;
-            imageX -= 15;
-            imageX %= backgroundimg.getIconWidth();
-            try {
-                obj.sound(carb);
-            } catch (UnsupportedAudioFileException ex) {
-                throw new RuntimeException(ex);
-            } catch (IOException ex) {
-                throw new RuntimeException(ex);
-            } catch (LineUnavailableException ex) {
-                throw new RuntimeException(ex);
-            }
+
         }
         if (e.getKeyCode() == KeyEvent.VK_A) {
 
         }
         if (e.getKeyCode() == KeyEvent.VK_D) {
-            isJumping = true;
+
             carup = true;
-            carSpeedY = 10;
+
 
         }
         if (e.getKeyCode() == KeyEvent.VK_SPACE)
@@ -214,48 +264,75 @@ public class Car_shape extends JPanel implements KeyListener, ActionListener,Run
             space=true;
             bulletX = xpos + 93; // Reset the bullet's starting position
             bulletY = ypos + 20;
+
         }
+            if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+
+                    enterPressed = true; // Set the flag to true
+                if(!gamerunning) {
+                    restartGame();
+                }
+
+            }
 
     }
+
+    private void restartGame() {
+        gamerunning=true;
+        elapsedTime = 0;
+        xpos = 300;
+        ypos = 590;
+        flyingenemyx = 2000;
+        flyingenemyy = 200;
+        groundenemyx = 1000;
+        groundenemyy = 550;
+        isJumping = false;
+        carSpeedY = 0;
+        space = false;
+        bulletX = xpos + 93;
+        bulletY = ypos + 20;
+        repaint();
+    }
+
     @Override
     public void keyReleased(KeyEvent e) {
         if (e.getKeyCode() == KeyEvent.VK_W ) {
             carf = false;
-            try {
-                obj.sound(carf);
-            } catch (UnsupportedAudioFileException ex) {
-                throw new RuntimeException(ex);
-            } catch (IOException ex) {
-                throw new RuntimeException(ex);
-            } catch (LineUnavailableException ex) {
-                throw new RuntimeException(ex);
-            }
-
+            sound(carf);
         }
         if (e.getKeyCode()== KeyEvent.VK_S )
         {
             carb = false;
-            try {
-                obj.sound(carb);
-            } catch (UnsupportedAudioFileException ex) {
-                throw new RuntimeException(ex);
-            } catch (IOException ex) {
-                throw new RuntimeException(ex);
-            } catch (LineUnavailableException ex) {
-                throw new RuntimeException(ex);
-            }
+            sound(carb);
+
         }
         if (e.getKeyCode() == KeyEvent.VK_D) {
-            space = false;
             carup = false;
-            carSpeedY = 5;
+            carSpeedY = 6;
         }
         if (e.getKeyCode() == KeyEvent.VK_SPACE)
         {
             space=false;
         }
+        if (e.getKeyCode() == KeyEvent.VK_ENTER)
+        {
+            enterPressed = false;
+        }
 
     }
+
+    private void sound(boolean carsound) {
+        try {
+            obj.sound(carsound);
+        } catch (UnsupportedAudioFileException ex) {
+            throw new RuntimeException(ex);
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        } catch (LineUnavailableException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
     @Override
     public void actionPerformed(ActionEvent e) {
         if (isJumping) {

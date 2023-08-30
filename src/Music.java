@@ -11,15 +11,15 @@ public class Music {
         clip.open(audiostream);
     }
 
-    void sound(boolean carf) throws UnsupportedAudioFileException, IOException, LineUnavailableException {
+    void sound(boolean carsound) throws UnsupportedAudioFileException, IOException, LineUnavailableException {
 
-        if(carf==true) {
+        if(carsound==true) {
             if (!clip.isRunning()) {
                 clip.setMicrosecondPosition(4*1000000); // Reset the playback position to the beginning
                 clip.start();
             }
         }
-        else
+        else if(carsound==false)
         {
             clip.stop();
         }
