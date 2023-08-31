@@ -49,6 +49,7 @@ public class menuclass implements ActionListener {
         frame.add(exitbutton);
 
         startbutton.addActionListener(this);
+        exitbutton.addActionListener(this);
 
         // Add a window listener to handle the close operation
 
