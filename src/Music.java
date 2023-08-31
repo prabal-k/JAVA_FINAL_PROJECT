@@ -3,7 +3,7 @@ import java.io.File;
 import java.io.IOException;
 
 public class Music {
-    File file = new File("C:\\Users\\Prabal Kuinkel\\Desktop\\4TH SEM BIT\\JAVA GUI\\Bouncy_Motor[JAVA]\\src\\Start.wav");
+    File file = new File("src\\rap.wav");
     Clip clip = AudioSystem.getClip();
 
     public Music() throws LineUnavailableException, UnsupportedAudioFileException, IOException {
