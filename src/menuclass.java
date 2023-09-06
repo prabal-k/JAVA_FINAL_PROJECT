@@ -9,12 +9,13 @@ import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.nio.file.attribute.FileAttribute;
 
-public class menuclass implements ActionListener {
+public class menuclass extends JPanel implements ActionListener {
 
     JFrame frame= new JFrame("Game Main Menu");
     JButton startbutton =new JButton();
 
     JButton exitbutton = new JButton();
+    ImageIcon backgroundimage = new ImageIcon("src\\background.jpeg");
 
     menuclass()
     {
@@ -24,6 +25,7 @@ public class menuclass implements ActionListener {
         frame.setVisible(true);
         frame.setLocationRelativeTo(null);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.add(this);
         //start button
 
         startbutton.setBounds(280,100,100,50);
@@ -51,10 +53,14 @@ public class menuclass implements ActionListener {
         startbutton.addActionListener(this);
         exitbutton.addActionListener(this);
 
-        // Add a window listener to handle the close operation
+    }
 
-
-
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        Graphics2D g2d= (Graphics2D) g;
+        g2d.setColor(getBackground());
+        g2d.drawImage(backgroundimage.getImage(),0,0,backgroundimage.getIconWidth(),backgroundimage.getIconHeight(),null);
     }
 
     @Override
@@ -81,5 +87,4 @@ public class menuclass implements ActionListener {
         }
 
     }
-
 }
