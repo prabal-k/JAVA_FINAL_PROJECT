@@ -15,7 +15,7 @@ public class Car_shape extends JPanel implements KeyListener, ActionListener,Run
     private boolean gameOver = false; // Flag to check if the game is over
     private boolean dataAppended = false;
     Thread gameThread;
-    boolean carf = false, carb = false, carup = false,space=false,bomb=false;
+    boolean carf = false, carb = false, carup = false, space = false, bomb = false;
     int framewidth = 1200, frameheight = 700;
     //for background image
     ImageIcon backgroundimg = new ImageIcon("src\\background.png");
@@ -27,30 +27,37 @@ public class Car_shape extends JPanel implements KeyListener, ActionListener,Run
     ImageIcon bulletimage = new ImageIcon("src\\bullet.gif");
     ImageIcon forwardimage = new ImageIcon("src\\still.gif");
     ImageIcon backwardimage = new ImageIcon("src\\rstill.gif");
+    ImageIcon explosionimage = new ImageIcon("src\\explosion.gif");
     ImageIcon bombimage = new ImageIcon("src\\bomb.gif");
     ImageIcon fly = new ImageIcon("src\\fly.gif");
     int xpos = 300, ypos = 590;
     Music obj = new Music();
     private Timer timer;
     private int carSpeedY = 0;
-    private int gravity = 1;
-    private boolean isJumping = false,gamerunning=true;
+    private double gravity = 1;
+    private boolean isJumping = false, gamerunning = true;
     //for score
     private int elapsedTime = 0;
     String formattedTime;
     private int bulletX = xpos + 80;
     private int bulletY = ypos + 20;
-    private int bulletSpeed =10;
+    private int bulletSpeed = 10;
     private int bulletDistance = 4000;
-    int flyingenemyx=2500,flyingenemyy=200,groundenemyx=2000,groundenemyy=500;
+    int flyingenemyx = 2500, flyingenemyy = 200, groundenemyx = 2000, groundenemyy = 500;
     private boolean gameRunning = true;
     private boolean enterPressed = false;
     private ArrayList<Rectangle> groundenemy = new ArrayList<>();
-    int bombxpos=xpos,   bombypos =ypos;
+    int bombxpos = xpos, bombypos = ypos;
     private ArrayList<Integer> groundenemyHitCount = new ArrayList<>();
-    int enemydeathcount=0;
+    int enemydeathcount = 0;
     int highestKilled = 0;
-    String time = "",username="";
+    String time = "", username = "";
+    boolean bombdown=false;
+    private boolean explosion = false;
+    private long explosionStartTime = 0;
+    private int explosionX, explosionY;
+
+
 
     public Car_shape() throws LineUnavailableException, UnsupportedAudioFileException, IOException {
         Timer htimer = new Timer(1000, new ActionListener() { // Timer fires every 1000 milliseconds (1 second)
@@ -76,6 +83,7 @@ public class Car_shape extends JPanel implements KeyListener, ActionListener,Run
         }
 
     }
+
     void shapeed() {
         frame.setSize(framewidth, frameheight);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -90,6 +98,7 @@ public class Car_shape extends JPanel implements KeyListener, ActionListener,Run
         frame.setVisible(true);
 
     }
+
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -103,7 +112,7 @@ public class Car_shape extends JPanel implements KeyListener, ActionListener,Run
         g2d.setColor(getBackground());
         g2d.fillRect(0, 0, getWidth(), getHeight());
         // Draw the background image
-        g2d.drawImage(backgroundimg.getImage(), -imageX, 0, imageWidth ,getHeight(), this);
+        g2d.drawImage(backgroundimg.getImage(), -imageX, 0, imageWidth, getHeight(), this);
         g2d.drawImage(backgroundimg.getImage(), imageWidth - imageX, 0, imageWidth, getHeight(), this);
 
         // Draw score in mm:ss format
@@ -112,53 +121,43 @@ public class Car_shape extends JPanel implements KeyListener, ActionListener,Run
         formattedTime = String.format("%02d:%02d", elapsedTime / 60, elapsedTime % 60);
         g2d.drawString("Time: " + formattedTime, 10, 30);
         g2d.setColor(Color.BLACK);
-        g2d.drawString("Killed: "+enemydeathcount,  500, 30);
+        g2d.drawString("Killed: " + enemydeathcount, 500, 30);
 
 
         //draw ground enemy
         for (Rectangle groundenemyimage1 : groundenemy) {
-            if ( groundenemyimage1!= null) {
+            if (groundenemyimage1 != null) {
                 if (carf) {
                     groundenemyimage1.x -= 3;
-                } else if(carb) {
+                } else if (carb) {
                     groundenemyimage1.x += 1;
-                }
-                else {
-                    groundenemyimage1.x -=1 ;
+                } else {
+                    groundenemyimage1.x -= 1;
                 }
                 g2d.drawImage(groundenemyimage.getImage(), groundenemyimage1.x, groundenemyimage1.y, this);
             }
         }
 
-        if (carf)
-        {
-            g2d.drawImage(forwardimage.getImage(),  xpos, ypos , null);
-        }
-        else if (carb)
-        {
-            g2d.drawImage(backwardimage.getImage(),  xpos, ypos , null);
-        }
-        else if (carup)
-        {
+        if (carf) {
+            g2d.drawImage(forwardimage.getImage(), xpos, ypos, null);
+        } else if (carb) {
+            g2d.drawImage(backwardimage.getImage(), xpos, ypos, null);
+        } else if (carup) {
             g2d.drawImage(forwardimage.getImage(), xpos, ypos, null);
             g2d.drawImage(fly.getImage(), xpos + 35, ypos + 30, null);
+        } else {
+            g2d.drawImage(carimage.getImage(), xpos, ypos, null);
         }
-        else
-         {
-             g2d.drawImage(carimage.getImage(),  xpos, ypos , null);
-         }
-        if (space)
-        {
-            g2d.drawImage(bulletimage.getImage(),  bulletX, bulletY , this);
+        if (space) {
+            g2d.drawImage(bulletimage.getImage(), bulletX, bulletY, this);
         }
-        if(carup&&carf)
-        {
-            g2d.drawImage(fly.getImage(),xpos+35,ypos+30,null);
+        if (carup && carf) {
+            g2d.drawImage(fly.getImage(), xpos + 35, ypos + 30, null);
         }
-        if(bomb)
-        {
-            g2d.drawImage(bombimage.getImage(),bombxpos+20,bombypos+40,null);
+        if (bomb) {
+            g2d.drawImage(bombimage.getImage(), bombxpos + 20, bombypos + 40, null);
         }
+
 
         if (!gamerunning) {
             try {
@@ -168,6 +167,16 @@ public class Car_shape extends JPanel implements KeyListener, ActionListener,Run
             }
             return;
         }
+        if (explosion && System.currentTimeMillis() - explosionStartTime <= 500) {
+            g2d.drawImage(explosionimage.getImage(), explosionX, explosionY, this);
+
+        }
+
+        else {
+            explosionStartTime=0;
+        }
+
+
         groundcheckcollision();
         g2d.dispose(); // Release resources
         g.drawImage(offscreenImage, 0, 0, this);
@@ -197,7 +206,7 @@ public class Car_shape extends JPanel implements KeyListener, ActionListener,Run
                     if (killed > highestKilled) {
                         highestKilled = killed;
                         time = parts[2];
-                        username=parts[3];
+                        username = parts[3];
                     }
                 }
             }
@@ -218,15 +227,16 @@ public class Car_shape extends JPanel implements KeyListener, ActionListener,Run
         g.setColor(Color.BLACK);
         g.setFont(new Font("Ink Free", Font.BOLD, 40));
         g.drawString("Killed: " + enemydeathcount, 500, 200);
-        g.drawString("Best score: "+"Killed"+String.valueOf(highestKilled),50,50);
-        g.drawString(time,50,100);
-        g.drawString(username,00,150);
+        g.drawString("Best score: " + "Killed" + String.valueOf(highestKilled), 50, 50);
+        g.drawString(time, 50, 100);
+        g.drawString(username, 00, 150);
         g.drawString("Press Enter to Restart", 500, 400);
         if (enterPressed && !gamerunning) {
             restartGame();
         }
     }
-        //for game control loop (fps)
+
+    //for game control loop (fps)
     @Override
     public void run() {
         double drawinterval = 1000000000 / fps;
@@ -254,47 +264,44 @@ public class Car_shape extends JPanel implements KeyListener, ActionListener,Run
             }
         }
     }
+
     void update() throws UnsupportedAudioFileException, LineUnavailableException, IOException {
 
         if (!gameRunning) {
             return; // Skip updating if the game is over
         }
         if (carb) {
-            imageX -= 2;
+            imageX -= 3;
             imageX %= backgroundimg.getIconWidth();
             sound(carb);
             space = false;
             //groundenemyx = groundenemyx - 5;
         } else if (carf) {
-            imageX += 2;
+            imageX += 3;
             imageX %= backgroundimg.getIconWidth();
             sound(carf);
         }
 
-        if(carup)
-        {
-            if(ypos>=20) {
+        if (carup) {
+            if (ypos >= 20) {
                 isJumping = true;
                 carSpeedY = 3;
+            } else {
+                carSpeedY = 0;
             }
-            else {
-                carSpeedY=0;
-            }
-          //  sound(carup);
+            //  sound(carup);
         }
-        if(space)
-        {
+        if (space) {
             bulletX += bulletSpeed;
-            if (bulletX >= framewidth)
-            {
+            if (bulletX >= framewidth) {
                 space = false; // Reset when the bullet has traveled the desired distance
                 bulletX = xpos + 93; // Reset the bullet's starting position
             }
 
         }
-        if(bomb)
-        {
-            bombypos+=5;
+        if (bomb) {
+           // bombypos += 5; // Move the bomb up
+            bombdown=true;
         }
 
         groundcheckcollision();
@@ -303,14 +310,33 @@ public class Car_shape extends JPanel implements KeyListener, ActionListener,Run
     private void groundcheckcollision() {
         Rectangle carrect = new Rectangle(xpos, ypos, carimage.getIconWidth(), carimage.getIconHeight());
         Rectangle bulletrect = new Rectangle(bulletX, bulletY, bulletimage.getIconWidth(), bulletimage.getIconHeight());
+        Rectangle bombrect = new Rectangle(bombxpos, bombypos, bombimage.getIconWidth(), bombimage.getIconHeight());
 
         for (int i = 0; i < groundenemy.size(); i++) {
             Rectangle groundenemyrect = groundenemy.get(i);
             if (groundenemyrect != null && carrect.intersects(groundenemyrect)) {
                 gamerunning = false;
             }
-            if (space&&bulletrect.intersects(groundenemyrect))
-            {
+
+            if (bomb&&bombrect.intersects(groundenemyrect)) {
+                groundenemyHitCount.set(i, groundenemyHitCount.get(i)+1 );
+                if (groundenemyHitCount.get(i) >= 1) {
+                    groundenemy.remove(i);
+                    groundenemyHitCount.remove(i);
+                    enemydeathcount++;
+                    explosion=true;
+                    explosionStartTime = System.currentTimeMillis();
+                    explosionX = groundenemyrect.x; // Store the explosion position
+                    explosionY = groundenemyrect.y;
+
+                    // Reset the hit count for other ground enemies to zero
+                    for (int j = 0; j < groundenemyHitCount.size(); j++) {
+                        groundenemyHitCount.set(j, 0);
+                    }
+
+                }
+            }
+            if (space && bulletrect.intersects(groundenemyrect)) {
                 // Increment the hit count for this ground enemy
                 System.out.println(groundenemyHitCount.get(i));
                 groundenemyHitCount.set(i, groundenemyHitCount.get(i) + 1);
@@ -320,6 +346,10 @@ public class Car_shape extends JPanel implements KeyListener, ActionListener,Run
                     groundenemy.remove(i);
                     groundenemyHitCount.remove(i);
                     enemydeathcount++;
+                    explosion=true;
+                    explosionStartTime = System.currentTimeMillis();
+                    explosionX = groundenemyrect.x; // Store the explosion position
+                    explosionY = groundenemyrect.y;
 
                     // Reset the hit count for other ground enemies to zero
                     for (int j = 0; j < groundenemyHitCount.size(); j++) {
@@ -327,59 +357,59 @@ public class Car_shape extends JPanel implements KeyListener, ActionListener,Run
                     }
 
                 }
-
                 space = false;
             }
         }
 
     }
+
     @Override
     public void keyTyped(KeyEvent e) {
     }
+
     @Override
     public void keyPressed(KeyEvent e) {
 
-        if (e.getKeyCode() == KeyEvent.VK_W ) {
+        if (e.getKeyCode() == KeyEvent.VK_W) {
             carf = true;
         }
         if (e.getKeyCode() == KeyEvent.VK_S) {
             carb = true;
         }
         if (e.getKeyCode() == KeyEvent.VK_D) {
-            if(ypos>20) {
+            if (ypos > 20) {
                 carup = true;
-            }
-            else {
-                carSpeedY=0;
+            } else {
+                carSpeedY = 0;
             }
         }
-        if (e.getKeyCode() == KeyEvent.VK_SPACE)
-        {
-            space=true;
+        if (e.getKeyCode() == KeyEvent.VK_SPACE) {
+            space = true;
             bulletX = xpos + 80; // Reset the bullet's starting position
             bulletY = ypos + 20;
 
         }
-        if (e.getKeyCode() == KeyEvent.VK_ENTER)
-        {
-            enterPressed=true;
+        if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+            enterPressed = true;
         }
-        if (e.getKeyCode() == KeyEvent.VK_UP)
-        {
-            bomb= true;
+        if (e.getKeyCode() == KeyEvent.VK_UP) {
+            bomb = true;
         }
+        
 
     }
+
     private void restartGame() {
-        gamerunning=true;
+        gamerunning = true;
         elapsedTime = 0;
         xpos = 300;
         ypos = 590;
+
         groundenemyx = 2000;
         groundenemyy = 500;
-        dataAppended=false;
+        dataAppended = false;
 
-        enemydeathcount=0;
+        enemydeathcount = 0;
         resetGroundEnemies();
         resetGroundEnemyHitCounts(); // Reset hit counts
 
@@ -415,34 +445,32 @@ public class Car_shape extends JPanel implements KeyListener, ActionListener,Run
 
     @Override
     public void keyReleased(KeyEvent e) {
-        if (e.getKeyCode() == KeyEvent.VK_W ) {
+        if (e.getKeyCode() == KeyEvent.VK_W) {
             carf = false;
             sound(carf);
         }
-        if (e.getKeyCode()== KeyEvent.VK_S )
-        {
+        if (e.getKeyCode() == KeyEvent.VK_S) {
             carb = false;
             sound(carb);
 
         }
         if (e.getKeyCode() == KeyEvent.VK_D) {
             carup = false;
-            carSpeedY = 3;
-            gravity = 1; // Decrease the gravity
+            carSpeedY =- 5;
+            gravity = 0.5; // Decrease the gravity
 
             //sound(carup);
         }
-        if (e.getKeyCode() == KeyEvent.VK_SPACE)
-        {
-            space=false;
+        if (e.getKeyCode() == KeyEvent.VK_SPACE) {
+            space = false;
         }
-        if (e.getKeyCode() == KeyEvent.VK_ENTER)
-        {
+        if (e.getKeyCode() == KeyEvent.VK_ENTER) {
             enterPressed = false;
         }
         if (e.getKeyCode() == KeyEvent.VK_UP) {
-            bomb= false;
-
+            bomb = false;
+            bombypos = ypos;
+            // bombxpos=xpos;
         }
     }
 
@@ -469,6 +497,17 @@ public class Car_shape extends JPanel implements KeyListener, ActionListener,Run
                 isJumping = false;
             }
         }
-        repaint();
+        if(bombdown)
+        {
+            if(ypos<600) {
+                bombypos += 5;
+                System.out.println(ypos);
+            }
+            else {
+                bombypos=ypos;
+                bombdown=false;
+            }
+        }
+            repaint();
     }
 }
