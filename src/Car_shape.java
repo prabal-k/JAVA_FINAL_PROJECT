@@ -143,6 +143,7 @@ public class Car_shape extends JPanel implements KeyListener, ActionListener,Run
         }
         g2d.setColor(Color.BLACK);
         g2d.drawString("Killed: " + enemydeathcount, 500, 30);
+        System.out.println(playerName);
 
 
         //draw ground enemy
@@ -229,7 +230,13 @@ public class Car_shape extends JPanel implements KeyListener, ActionListener,Run
             FileWriter filewriter = new FileWriter(file, true);
             filewriter.write("Killed: " + enemydeathcount + " ");
             filewriter.write(formattedTime + " ");
-            filewriter.write(playerName + "\n");
+
+            if(playerName!="") {
+                filewriter.write(playerName + "\n");
+            }
+            else if(playerName.equals("")){
+                filewriter.write("null" + "\n");
+            }
             filewriter.close();
             dataAppended = true;
         }
@@ -354,8 +361,9 @@ public class Car_shape extends JPanel implements KeyListener, ActionListener,Run
                 Rectangle bombrect = new Rectangle(bombxpos, bombypos, bombimage.getIconWidth(), bombimage.getIconHeight());
                 if (bullet.intersects(groundenemyrect)) {
                     System.out.println(groundenemyHitCount.get(i));
-                    bullets.remove(i);
+
                     groundenemyHitCount.set(i, groundenemyHitCount.get(i) + 1);
+                    bullets.remove(i);
 
                     // Remove the ground enemy if hit count reaches 10
                     if (groundenemyHitCount.get(i) >= 3) {
@@ -368,9 +376,9 @@ public class Car_shape extends JPanel implements KeyListener, ActionListener,Run
                         explosionY = groundenemyrect.y;
 
                         // Reset the hit count for other ground enemies to zero
-                        for (int k = 0; k < groundenemyHitCount.size(); k++) {
-                            groundenemyHitCount.set(k, 0);
-                        }
+//                        for (int k = 0; k < groundenemyHitCount.size(); k++) {
+//                            groundenemyHitCount.set(k, 0);
+//                        }
 
                     }
                     space = false;
@@ -385,7 +393,6 @@ public class Car_shape extends JPanel implements KeyListener, ActionListener,Run
                 if (bullet.intersects(flyingenemyrect)) {
                     flyingenemyHitCount.set(i, flyingenemyHitCount.get(i) + 1);
                     bullets.remove(i);
-                    flyingenemyHitCount.set(i,flyingenemyHitCount.get(i) + 1);
 
                     if (flyingenemyHitCount.get(i) >= 3) {
                             flyingenemy.remove(i);
