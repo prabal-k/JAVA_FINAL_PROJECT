@@ -143,7 +143,6 @@ public class Car_shape extends JPanel implements KeyListener, ActionListener,Run
         }
         g2d.setColor(Color.BLACK);
         g2d.drawString("Killed: " + enemydeathcount, 500, 30);
-        System.out.println(playerName);
 
 
         //draw ground enemy
@@ -204,7 +203,13 @@ public class Car_shape extends JPanel implements KeyListener, ActionListener,Run
             return;
         }
         if (explosion && System.currentTimeMillis() - explosionStartTime <= 2000) {
-            g2d.drawImage(explosionimage.getImage(), explosionX, explosionY, this);
+            if(carf) {
+                explosionX-=3;
+                g2d.drawImage(explosionimage.getImage(), explosionX, explosionY, this);
+            }
+            else {
+                g2d.drawImage(explosionimage.getImage(), explosionX, explosionY, this);
+            }
 
         }
 
@@ -231,11 +236,12 @@ public class Car_shape extends JPanel implements KeyListener, ActionListener,Run
             filewriter.write("Killed: " + enemydeathcount + " ");
             filewriter.write(formattedTime + " ");
 
-            if(playerName!="") {
-                filewriter.write(playerName + "\n");
-            }
-            else if(playerName.equals("")){
+            if(playerName==null||playerName.isEmpty()) {
                 filewriter.write("null" + "\n");
+
+            }
+            else {
+                filewriter.write(playerName + "\n");
             }
             filewriter.close();
             dataAppended = true;
@@ -268,14 +274,17 @@ public class Car_shape extends JPanel implements KeyListener, ActionListener,Run
         sound(false);
         g.setColor(Color.RED);
         g.setFont(new Font("Ink Free", Font.BOLD, 100));
-        g.drawString("Game Over", 450, 100);
+        g.drawString("Game Over", 420, 100);
         g.setColor(Color.BLACK);
         g.setFont(new Font("Ink Free", Font.BOLD, 40));
-        g.drawString("Killed: " + enemydeathcount, 500, 200);
-        g.drawString("Best score: " + "Killed" + String.valueOf(highestKilled), 50, 50);
-        g.drawString(time, 50, 100);
-        g.drawString(username, 00, 150);
-        g.drawString("Press Enter to Restart", 500, 400);
+        g.drawString("You Killed: " + enemydeathcount, 500, 200);
+        g.drawString("Time: " + formattedTime, 500, 250);
+        g.drawString("Best score: " , 500, 400);
+        g.drawString("Killed: " + String.valueOf(highestKilled), 500, 450);
+        g.drawString(time, 500, 500);
+        g.drawString(username, 500, 550);
+        g.setColor(Color.RED);
+        g.drawString("Press Enter to Restart", 450, 300);
         if (enterPressed && !gamerunning) {
             restartGame();
         }
@@ -561,7 +570,7 @@ public class Car_shape extends JPanel implements KeyListener, ActionListener,Run
         if (e.getKeyCode() == KeyEvent.VK_ENTER) {
             enterPressed = true;
         }
-        if (e.getKeyCode() == KeyEvent.VK_UP) {
+        if (e.getKeyCode() == KeyEvent.VK_A) {
             bombxpos=xpos;
             bombypos=ypos;
             bomb = true;
