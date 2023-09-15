@@ -8,6 +8,9 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Random;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
 
 public class Car_shape extends JPanel implements KeyListener, ActionListener,Runnable {
     JFrame frame = new JFrame();
@@ -33,6 +36,7 @@ public class Car_shape extends JPanel implements KeyListener, ActionListener,Run
     ImageIcon explosionimage = new ImageIcon("src\\explosion.gif");
     ImageIcon bombimage = new ImageIcon("src\\bomb.gif");
     ImageIcon fly = new ImageIcon("src\\fly.gif");
+    private File audioFile = new File("src\\explosion.wav");
     int xpos = 300, ypos = 530;
     Music obj = new Music();
     private Timer timer;
@@ -56,26 +60,27 @@ public class Car_shape extends JPanel implements KeyListener, ActionListener,Run
     private int explosionX, explosionY;
     private ArrayList<Rectangle> bullets = new ArrayList<>();
     private ArrayList<Rectangle> bullethealth = new ArrayList<>();
-
     private int bulletCount = 50;
     private int lastEnemySpawnTime = 0;
-    private int enemySpawnInterval = 1000; // Adjust this value as needed (in milliseconds)
+    private int enemySpawnInterval = 1000;
     private int enemyHitCountIncrement = 1;
     private ArrayList<FlyingEnemyBullet> flyingEnemyBullets = new ArrayList<>();
-    private int bulletFireInterval = 200; // Adjust the firing interval as needed (in milliseconds)
+    private int bulletFireInterval = 200;
     private long lastBulletFireTime = 0;
+
+    //constructor for initialization
     public Car_shape() throws LineUnavailableException, UnsupportedAudioFileException, IOException {
-        Timer htimer = new Timer(100, new ActionListener() { // Timer fires every 1000 milliseconds (1 second)
+        Timer htimer = new Timer(100, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e)
             {
                 if(carf)
                 {
-                    elapsedTime++; // Increment the elapsed time every second
+                    elapsedTime++;           //to measure distance travelled
                 }
                 if(carb)
                 {
-                    elapsedTime--; // Increment the elapsed time every second
+                    elapsedTime--;
                 }
             }
         });
@@ -94,18 +99,6 @@ public class Car_shape extends JPanel implements KeyListener, ActionListener,Run
         });
         enemySpawnTimer.start();
 
-
-        //for ground enemy position
-//        for(int i=0;i<2000000;i=i+1500) {
-//            groundenemy.add(new Rectangle(groundenemyx+i, groundenemyy, groundenemyimage.getIconWidth(), groundenemyimage.getIconHeight()));
-//        }
-//        for(int i=2000;i<2000000;i=i+2000) {
-//            //for flying enemy position
-//            Random random = new Random();
-//            int flyingy = random.nextInt(frameheight - 300);
-//            flyingenemy.add(new Rectangle(flyingenemyx+i, flyingy, flyingenemyimage.getIconWidth(), flyingenemyimage.getIconHeight()));
-//        }
-
         //for bullethealth
         bullethealth.add(new Rectangle(14000,200, bullethealthimage.getIconWidth(), bullethealthimage.getIconHeight()));
         bullethealth.add(new Rectangle(29000,300, bullethealthimage.getIconWidth(), bullethealthimage.getIconHeight()));
@@ -118,30 +111,30 @@ public class Car_shape extends JPanel implements KeyListener, ActionListener,Run
         for (int i = 0; i < flyingenemy.size(); i++) {
             flyingenemyHitCount.add(0);
         }
-
     }
+
+    //to determine the random position to draw ground enemies
     private void spawnGroundEnemy() {
         Random random = new Random();
-        int initialX = groundenemyx + framewidth + random.nextInt(500); // Adjust as needed
+        int initialX = groundenemyx + framewidth + random.nextInt(500);
         groundenemy.add(new Rectangle(initialX, groundenemyy, groundenemyimage.getIconWidth(), groundenemyimage.getIconHeight()));
-        groundenemyHitCount.add(0); // Reset hit count
+        groundenemyHitCount.add(0);
     }
-
-    // Method to spawn a new flying enemy
+    //to determine the random position to draw flying enemies
     private void spawnFlyingEnemy() {
         Random random = new Random();
-        int initialX = flyingenemyx + framewidth + random.nextInt(500); // Adjust as needed
-        int initialY = random.nextInt(frameheight - 300); // Adjust as needed
+        int initialX = flyingenemyx + framewidth + random.nextInt(500);
+        int initialY = random.nextInt(frameheight - 300);
         flyingenemy.add(new Rectangle(initialX, initialY, flyingenemyimage.getIconWidth(), flyingenemyimage.getIconHeight()));
-        flyingenemyHitCount.add(0); // Reset hit count
+        flyingenemyHitCount.add(0);
     }
 
+    //to take the username as input from the player
     private String showCustomInputDialog() {
         JPanel inputPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         JLabel label = new JLabel("Enter your name:");
         JTextField inputField = new JTextField(20);
 
-        // Customize input field's appearance
         inputField.setFont(new Font("Ink free", Font.BOLD, 25));
         inputField.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
         inputField.setPreferredSize(new Dimension(200, 40));
@@ -164,6 +157,7 @@ public class Car_shape extends JPanel implements KeyListener, ActionListener,Run
         }
     }
 
+    //to setup the frame
     void shapeed() {
         frame.setSize(framewidth, frameheight);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -179,13 +173,26 @@ public class Car_shape extends JPanel implements KeyListener, ActionListener,Run
         ImageIcon cursorImage = new ImageIcon("src/cursor.png");
         Cursor customCursor = Toolkit.getDefaultToolkit().createCustomCursor(
                 cursorImage.getImage(),
-                new Point(0, 0), // Hotspot at the top-left corner of the image
+                new Point(0, 0),
                 "customCursor"
         );
         frame.setCursor(customCursor);
 
     }
 
+    //play sound when an enemy dies (boom)
+    private void playExplosionSound() {
+        try {
+            AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(audioFile);
+            Clip clip = AudioSystem.getClip();
+            clip.open(audioInputStream);
+            clip.start();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    //to draw all the graphical components on the screen (all images realted stuff)
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -195,7 +202,6 @@ public class Car_shape extends JPanel implements KeyListener, ActionListener,Run
         }
         Graphics2D g2d = offscreenImage.createGraphics();
         int imageWidth = backgroundimg.getIconWidth();
-        // Clear the offscreen buffer
         g2d.setColor(getBackground());
         g2d.fillRect(0, 0, getWidth(), getHeight());
 
@@ -206,7 +212,6 @@ public class Car_shape extends JPanel implements KeyListener, ActionListener,Run
         // Draw score in mm:ss format
         g2d.setColor(Color.WHITE);
         g2d.setFont(new Font("Ink free", Font.BOLD, 30));
-        //formattedTime = String.format("%02d:%02d", elapsedTime / 60, elapsedTime % 60);
         g2d.drawString("Distance: " + elapsedTime+" m", 10, 30);
         g2d.setFont(new Font("Ink free", Font.BOLD, 30));
         g2d.drawString("Bullets: " + bulletCount, 10, 60); // Display the bullet count
@@ -335,6 +340,8 @@ public class Car_shape extends JPanel implements KeyListener, ActionListener,Run
         g2d.dispose(); // Release resources
         g.drawImage(offscreenImage, 0, 0, this);
     }
+    //when game is over this method is called to store name, enemieskilled and distance to
+    //the file and also read the highest score from the file and display leaderboard
 
     private void gameover(Graphics g) throws IOException {
         if (!dataAppended) {
@@ -427,11 +434,11 @@ public class Car_shape extends JPanel implements KeyListener, ActionListener,Run
             }
         }
     }
-
+//to handle the movement of the car image ie to move the carforward ,backward,fire bullets etc
     void update() throws UnsupportedAudioFileException, LineUnavailableException, IOException {
 
         if (!gameRunning) {
-            return; // Skip updating if the game is over
+            return;
         }
         if (carb) {
             imageX -= 3;
@@ -440,13 +447,9 @@ public class Car_shape extends JPanel implements KeyListener, ActionListener,Run
             space = false;
         } else if (carf)
         {
-
-
-                imageX += 3;
-                imageX %= backgroundimg.getIconWidth();
-
-                sound(carf);
-
+            imageX += 3;
+            imageX %= backgroundimg.getIconWidth();
+            sound(carf);
         }
 
         if (carup) {
@@ -514,13 +517,10 @@ public class Car_shape extends JPanel implements KeyListener, ActionListener,Run
 
     private void handleFlyingEnemyBullets() {
         long currentTime = System.currentTimeMillis();
-
-        // Iterate through flying enemies
         for (Rectangle flyingenemyrect : flyingenemy) {
             if (flyingenemyrect != null) {
                 double distanceToCar = calculateDistance(flyingenemyrect.x, flyingenemyrect.y, xpos, ypos);
 
-                // Fire bullets only if the enemy is near the car
                 if (distanceToCar < 300) { // Adjust the distance threshold as needed
                     // Fire bullets
                     if (currentTime - lastBulletFireTime >= bulletFireInterval) {
@@ -534,7 +534,6 @@ public class Car_shape extends JPanel implements KeyListener, ActionListener,Run
             }
         }
 
-        // Move and check for collisions with car
         Iterator<FlyingEnemyBullet> bulletIterator = flyingEnemyBullets.iterator();
         while (bulletIterator.hasNext()) {
             FlyingEnemyBullet bullet = bulletIterator.next();
@@ -554,16 +553,20 @@ public class Car_shape extends JPanel implements KeyListener, ActionListener,Run
         }
     }
 
+    //to measure the distance between the flying eney and car so that the enemy fires
+    //only when it is near the car
+
     private double calculateDistance(int x1, int y1, int x2, int y2) {
         int dx = x1 - x2;
         int dy = y1 - y2;
         return Math.sqrt(dx * dx + dy * dy);
     }
+
+    //detect collision between( bullets and ground enemy) &&(bombs and ground enemy)
     private void updateGroundEnemyCollisions(int index, Rectangle groundenemyrect, Rectangle collisionObject) {
         if (collisionObject.intersects(groundenemyrect))
         {
             groundenemyHitCount.set(index, groundenemyHitCount.get(index) + 1);
-
             // Remove the ground enemy if hit count reaches 3
             if (groundenemyHitCount.get(index) >= 3) {
                 groundenemy.remove(index);
@@ -573,6 +576,7 @@ public class Car_shape extends JPanel implements KeyListener, ActionListener,Run
                 explosionStartTime = System.currentTimeMillis();
                 explosionX = groundenemyrect.x; // Store the explosion position
                 explosionY = groundenemyrect.y;
+                playExplosionSound();
 
                 // Reset the hit count for other ground enemies to zero
                 for (int j = 0; j < groundenemyHitCount.size(); j++) {
@@ -581,6 +585,7 @@ public class Car_shape extends JPanel implements KeyListener, ActionListener,Run
             }
         }
     }
+    //detect collision between( bullets and flying enemy) &&(bombs and flying enemy)
 
     private void updateFlyingEnemyCollisions(int index, Rectangle flyingenemyrect, Rectangle collisionObject) {
         if (collisionObject.intersects(flyingenemyrect)) {
@@ -595,6 +600,7 @@ public class Car_shape extends JPanel implements KeyListener, ActionListener,Run
                 explosionStartTime = System.currentTimeMillis();
                 explosionX = flyingenemyrect.x; // Store the explosion position
                 explosionY = flyingenemyrect.y;
+                playExplosionSound();
 
                 // Reset the hit count for other flying enemies to zero
                 for (int j = 0; j < flyingenemyHitCount.size(); j++) {
@@ -604,6 +610,8 @@ public class Car_shape extends JPanel implements KeyListener, ActionListener,Run
         }
     }
 
+    //to check if the bullet has gone out of the frame if yes remove the bullet
+    //and if bullet intersects the ground enemy call the checkcollision method()
     private void updateBullets() {
         Iterator<Rectangle> bulletIterator = bullets.iterator();
 
@@ -638,7 +646,7 @@ public class Car_shape extends JPanel implements KeyListener, ActionListener,Run
             }
         }
     }
-
+//to detect collision between car and flying enemy
     private void flyingcheckcollision() {
         Rectangle carrect = new Rectangle(xpos, ypos, carimage.getIconWidth(), carimage.getIconHeight());
         for (int i = 0; i < flyingenemy.size(); i++)
@@ -650,7 +658,7 @@ public class Car_shape extends JPanel implements KeyListener, ActionListener,Run
 
         }
     }
-
+    //to detect collision between car and ground enemy
     private void groundcheckcollision() {
         Rectangle carrect = new Rectangle(xpos, ypos, carimage.getIconWidth(), carimage.getIconHeight());
 
@@ -667,7 +675,7 @@ public class Car_shape extends JPanel implements KeyListener, ActionListener,Run
     @Override
     public void keyTyped(KeyEvent e) {
     }
-
+//to determine which key the user has pressed
     @Override
     public void keyPressed(KeyEvent e) {
 
@@ -716,12 +724,16 @@ public class Car_shape extends JPanel implements KeyListener, ActionListener,Run
         }
     }
 
+    //to change the playersname each time game is over
+
     private void changePlayerName() {
         String newName = showCustomInputDialog();
         if (!newName.isEmpty()) {
             playerName = newName;
         }
     }
+
+    //once a game is over to restart the game from beginning
 
     private void restartGame() {
         gamerunning = true;
@@ -747,7 +759,6 @@ public class Car_shape extends JPanel implements KeyListener, ActionListener,Run
         bulletX = xpos + 93;
         bulletY = ypos + 20;
 
-        // Reset the enemy spawning related variables
         lastEnemySpawnTime = 0;
 
         // Clear any existing bullets
@@ -755,11 +766,14 @@ public class Car_shape extends JPanel implements KeyListener, ActionListener,Run
         repaint();
     }
 
+    //once the game is over reset health of all the flying enemies
+
     private void resetFlyingEnemyHitCounts() {
         for (int i = 0; i < flyingenemyHitCount.size(); i++) {
             flyingenemyHitCount.set(i, 0);
         }
     }
+    //once game is over remove all the flying enemies that is left
 
     private void resetFlyingEnemies() {
         flyingenemy.clear();
@@ -772,6 +786,8 @@ public class Car_shape extends JPanel implements KeyListener, ActionListener,Run
 //        }
 
     }
+    //once the game is over reset health of all the ground enemies
+
 
     private void resetGroundEnemyHitCounts() {
         for (int i = 0; i < groundenemyHitCount.size(); i++) {

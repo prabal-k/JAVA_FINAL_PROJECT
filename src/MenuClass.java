@@ -14,7 +14,7 @@ public class MenuClass extends JPanel implements ActionListener {
     private JButton startButton = new JButton("Start");
     private JButton exitButton = new JButton("Exit");
     private File audioFile = new File("src\\action.wav");
-
+    
     MenuClass() {
         frame.setSize(626, 417);
         frame.setLayout(null);
