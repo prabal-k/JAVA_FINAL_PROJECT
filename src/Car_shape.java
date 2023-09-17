@@ -51,7 +51,6 @@ public class Car_shape extends JPanel implements KeyListener, ActionListener,Run
     private int bulletY = ypos + 20;
     int flyingenemyx = 2500, flyingenemyy = 200, groundenemyx = 2000, groundenemyy = 445;
     private ArrayList<Rectangle> groundenemy = new ArrayList<>();
-    private ArrayList<Rectangle> flyingenemy2 = new ArrayList<>();
     private ArrayList<Integer> groundenemyHitCount = new ArrayList<>();
     private ArrayList<Rectangle> flyingenemy = new ArrayList<>();
     private ArrayList<Integer> flyingenemyHitCount = new ArrayList<>();
@@ -186,7 +185,7 @@ void spawnbullethealth()
         if (result == JOptionPane.OK_OPTION) {
             return inputField.getText();
         } else {
-            return ""; // Return an empty string if canceled
+            return "";
         }
     }
 
@@ -324,7 +323,7 @@ void spawnbullethealth()
                 Rectangle carrect = new Rectangle(xpos, ypos, carimage.getIconWidth(), carimage.getIconHeight());
                 if (carrect.intersects(bulletimage1)) {
                     bulletCount += 10;
-                    bulletIterator.remove(); // Remove the bullethealthimage safely
+                    bulletIterator.remove();
                 }
             }
         }
@@ -347,8 +346,6 @@ void spawnbullethealth()
                 }
             }
         }
-
-
 
 
         if (carf) {
@@ -579,45 +576,25 @@ void spawnbullethealth()
             updateFlyingEnemyCollisions(i, flyingenemyrect, bombrect);
         }
 
-        //-----------------increase the number of enemies as distance increases______________
-        int currentTime = elapsedTime; // You can also use elapsed time instead of distance
-        if (currentTime - lastEnemySpawnTime >= enemySpawnInterval) {
-            lastEnemySpawnTime = currentTime;
-
-            // Add new ground enemies
-            for (int i = 0; i < 3; i++) { // Add 3 new ground enemies each time
-                int initialX = groundenemyx + i * 1000; // Adjust the initialX as needed
-                groundenemy.add(new Rectangle(initialX, groundenemyy, groundenemyimage.getIconWidth(), groundenemyimage.getIconHeight()));
-                groundenemyHitCount.add(0); // Reset hit count
-            }
-
-            // Add new flying enemies
-            for (int i = 0; i < 3; i++) { // Add 3 new flying enemies each time
-                Random random =new Random();
-                int initialX = flyingenemyx + i * 1000; // Adjust the initialX as needed
-                int initialY = random.nextInt(frameheight - flyingenemyimage.getIconHeight());
-                flyingenemy.add(new Rectangle(initialX, initialY, flyingenemyimage.getIconWidth(), flyingenemyimage.getIconHeight()));
-                flyingenemyHitCount.add(0); // Reset hit count
-            }
-        }
         groundcheckcollision();
         flyingcheckcollision();
     }
+    // Adding more ground enemies
     private void increaseGroundEnemies() {
-        // Add more ground enemies as needed
-        for (int i = 0; i < 50; i++) { // Add 3 new ground enemies each time
-            int initialX = groundenemyx + i * 1000; // Adjust the initialX as needed
+
+        for (int i = 0; i < 50; i++) {
+            int initialX = groundenemyx + i * 1000;
             groundenemy.add(new Rectangle(initialX, groundenemyy, groundenemyimage.getIconWidth(), groundenemyimage.getIconHeight()));
-            groundenemyHitCount.add(0); // Reset hit count
+            groundenemyHitCount.add(0);
         }
     }
 
-    // Helper method to increase the number of flying enemies
-    private void increaseFlyingEnemies() {
+    private void increaseFlyingEnemies()
+    {
         // Add more flying enemies as needed
-        for (int i = 0; i < 50; i++) { // Add 3 new flying enemies each time
+        for (int i = 0; i < 50; i++) {
             Random random = new Random();
-            int initialX = flyingenemyx + i * 1000; // Adjust the initialX as needed
+            int initialX = flyingenemyx + i * 1000;
             int initialY = random.nextInt(frameheight - 300);
             flyingenemy.add(new Rectangle(initialX, initialY, flyingenemyimage.getIconWidth(), flyingenemyimage.getIconHeight()));
             flyingenemyHitCount.add(0); // Reset hit count

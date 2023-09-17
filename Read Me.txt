@@ -1,0 +1,8 @@
+W key - Car forward
+D key - Car upward
+space - fire bullet
+a key - fire bomb
+enter - to restart game when ended
+h key - stop background music
+g key - resume background music
+p key - change the user name (works only when game is over)

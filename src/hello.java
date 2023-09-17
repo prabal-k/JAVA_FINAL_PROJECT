@@ -6,7 +6,6 @@ public class hello  {
 
     public static void main(String[] args) throws LineUnavailableException, UnsupportedAudioFileException, IOException {
         MenuClass menu =new MenuClass();
-      //  menu.setup();
 
     }
 
