@@ -10,10 +10,11 @@ import java.io.IOException;
 
 public class MenuClass extends JPanel implements ActionListener {
 
-    private JFrame frame = new JFrame("Game Main Menu");
+    private JFrame frame = new JFrame("Zombie-carnage");
     private JButton startButton = new JButton("Start");
     private JButton exitButton = new JButton("Exit");
     private File audioFile = new File("src\\action.wav");
+    JLabel welcomeLabel = new JLabel("Welcome to the game");
     
     MenuClass() {
         frame.setSize(626, 417);
@@ -88,6 +89,29 @@ public class MenuClass extends JPanel implements ActionListener {
 
         startButton.addActionListener(this);
         exitButton.addActionListener(this);
+        // Create a JLabel to display the background image
+        JLabel backgroundLabel1 = new JLabel(backgroundImage);
+        backgroundLabel.setBounds(0, 0, 626, 417);
+
+// Create a JLabel to display the welcome message
+        JLabel welcomeLabel = new JLabel("Welcome to ZOMBIE-CARNAGE");
+        welcomeLabel.setFont(new Font("Ink free", Font.BOLD, 30));
+        welcomeLabel.setForeground(new Color(255, 165, 0)); // Set custom text color (Orange)
+// Set the position of the welcome label
+        int labelWidth = 480; // Adjust the width as needed
+        int labelHeight = 50; // Adjust the height as needed
+        int labelX = (backgroundLabel.getWidth() - labelWidth) / 2; // Center horizontally
+        int labelY = 0; // Adjust the vertical position as needed
+
+        welcomeLabel.setBounds(labelX, labelY, labelWidth, labelHeight);
+
+        backgroundLabel.add(welcomeLabel); // Add the label to the background label
+
+        frame.add(backgroundLabel);
+        frame.add(this);
+
+// ... (rest of your code)
+
 
         frame.setVisible(true);
     }
